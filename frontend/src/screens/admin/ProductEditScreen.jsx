@@ -1,25 +1,80 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Form, Button } from 'react-bootstrap';
+import { Form, Button, Image } from 'react-bootstrap';
 import Message from '../../components/Message';
 import Loader from '../../components/Loader';
 import FormContainer from '../../components/FormContainer';
+import { SortableContainer, SortableElement } from 'react-sortable-hoc';
+import { arrayMoveImmutable } from 'array-move';
+
 import { toast } from 'react-toastify';
 import {
   useGetProductDetailsQuery,
   useUpdateProductMutation,
   useUploadProductImageMutation,
+  useDeleteImageMutation,
+  useGetCategoryQuery,
 } from '../../slices/productsApiSlice';
+import { FaTrash } from 'react-icons/fa';
 
 const ProductEditScreen = () => {
-  const { id: productId } = useParams();
+  const SortableItem = SortableElement(({ value }) => {
+    console.log('e :>> ', value);
+    return (
+      <li className='imageRow'>
+        {value.path} <Image src={value.path} className='imageItem' />{' '}
+        <Button
+          variant='danger'
+          className='btn-sm'
+          onClick={() => deleteHandler(value.path)}
+        >
+          <FaTrash style={{ color: 'white' }} />
+        </Button>
+      </li>
+    );
+  });
 
+  const SortableList = SortableContainer(({ items }) => {
+    console.log('items :>> ', items);
+    return (
+      <ul>
+        {items?.map((value, index) => (
+          <SortableItem
+            key={`item-${value.path}`}
+            index={index}
+            value={value}
+          />
+        ))}
+      </ul>
+    );
+  });
+  const { data: categories, isLoading: categoriesLoading } =
+    useGetCategoryQuery({});
+  console.log('categories :>> ', categories);
+  const { id: productId } = useParams();
+  const deleteHandler = async (path) => {
+    try {
+      console.log('images :>> ', images);
+      setImages(images.filter((e) => e.path != path));
+      await deleteImage(path).unwrap();
+      // NOTE: here we need to unwrap the Promise to catch any rejection in our catch block
+      toast.success('Image Deleted');
+      await updateProduct({
+        productId,
+        name,
+        images,
+        material,
+        category,
+        description,
+      }).unwrap();
+    } catch (err) {
+      toast.error(err?.data?.message || err.error);
+    }
+  };
   const [name, setName] = useState('');
-  const [price, setPrice] = useState(0);
-  const [image, setImage] = useState('');
-  const [brand, setBrand] = useState('');
+  const [images, setImages] = useState([]);
+  const [material, setBrand] = useState('');
   const [category, setCategory] = useState('');
-  const [countInStock, setCountInStock] = useState(0);
   const [description, setDescription] = useState('');
 
   const {
@@ -34,21 +89,21 @@ const ProductEditScreen = () => {
 
   const [uploadProductImage, { isLoading: loadingUpload }] =
     useUploadProductImageMutation();
+  const [deleteImage] = useDeleteImageMutation();
 
   const navigate = useNavigate();
 
   const submitHandler = async (e) => {
     e.preventDefault();
     try {
+      console.log('images :>> ', images);
       await updateProduct({
         productId,
         name,
-        price,
-        image,
-        brand,
+        images,
+        material,
         category,
         description,
-        countInStock,
       }).unwrap(); // NOTE: here we need to unwrap the Promise to catch any rejection in our catch block
       toast.success('Product updated');
       refetch();
@@ -61,11 +116,9 @@ const ProductEditScreen = () => {
   useEffect(() => {
     if (product) {
       setName(product.name);
-      setPrice(product.price);
-      setImage(product.image);
-      setBrand(product.brand);
+      setImages(product.images);
+      setBrand(product.material);
       setCategory(product.category);
-      setCountInStock(product.countInStock);
       setDescription(product.description);
     }
   }, [product]);
@@ -76,19 +129,35 @@ const ProductEditScreen = () => {
     try {
       const res = await uploadProductImage(formData).unwrap();
       toast.success(res.message);
-      setImage(res.image);
+      setImages([...images, { path: res.image }]);
+      console.log('this.images :>> ', [...images, { path: res.image }]);
     } catch (err) {
       toast.error(err?.data?.message || err.error);
     }
   };
-
+  const targetHasProp = (target, hasProp) => {
+    while (target) {
+      if (hasProp(target)) {
+        return true;
+      }
+      // eslint-disable-next-line no-param-reassign
+      target = target.parentElement;
+    }
+    return false;
+  };
+  const shouldCancelSortStart = (coach) => {
+    // Cancel sort if a user is interacting with a given element
+    return targetHasProp(coach.target, (el) => {
+      return ['button'].includes(el.tagName.toLowerCase());
+    });
+  };
   return (
     <>
       <Link to='/admin/productlist' className='btn btn-light my-3'>
-        Go Back
+        بازگشت
       </Link>
       <FormContainer>
-        <h1>Edit Product</h1>
+        <h1>ویرایش محصول</h1>
         {loadingUpdate && <Loader />}
         {isLoading ? (
           <Loader />
@@ -97,7 +166,7 @@ const ProductEditScreen = () => {
         ) : (
           <Form onSubmit={submitHandler}>
             <Form.Group controlId='name'>
-              <Form.Label>Name</Form.Label>
+              <Form.Label>نام</Form.Label>
               <Form.Control
                 type='name'
                 placeholder='Enter name'
@@ -106,24 +175,17 @@ const ProductEditScreen = () => {
               ></Form.Control>
             </Form.Group>
 
-            <Form.Group controlId='price'>
-              <Form.Label>Price</Form.Label>
-              <Form.Control
-                type='number'
-                placeholder='Enter price'
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
-
             <Form.Group controlId='image'>
-              <Form.Label>Image</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter image url'
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-              ></Form.Control>
+              <Form.Label>عکس ها</Form.Label>
+              <SortableList
+                shouldCancelStart={shouldCancelSortStart}
+                items={images}
+                onSortEnd={({ oldIndex, newIndex }) => {
+                  let temp = arrayMoveImmutable(images, oldIndex, newIndex);
+                  console.log('temp :>> ', temp);
+                  setImages(temp);
+                }}
+              />
               <Form.Control
                 label='Choose File'
                 onChange={uploadFileHandler}
@@ -132,38 +194,34 @@ const ProductEditScreen = () => {
               {loadingUpload && <Loader />}
             </Form.Group>
 
-            <Form.Group controlId='brand'>
-              <Form.Label>Brand</Form.Label>
+            <Form.Group controlId='material'>
+              <Form.Label>جنس</Form.Label>
               <Form.Control
                 type='text'
-                placeholder='Enter brand'
-                value={brand}
+                placeholder='Enter material'
+                value={material}
                 onChange={(e) => setBrand(e.target.value)}
               ></Form.Control>
             </Form.Group>
 
-            <Form.Group controlId='countInStock'>
-              <Form.Label>Count In Stock</Form.Label>
-              <Form.Control
-                type='number'
-                placeholder='Enter countInStock'
-                value={countInStock}
-                onChange={(e) => setCountInStock(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
-
             <Form.Group controlId='category'>
-              <Form.Label>Category</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter category'
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              ></Form.Control>
+              <Form.Label>دسته بندی</Form.Label>
+              <Form.Select
+                onChange={(e) => {
+                  console.log('e :>> ', e);
+                  setCategory(e.target.value);
+                }}
+              >
+                {categories?.categories.map((e) => (
+                  <option value={e._id} selected={e._id === product.category}>
+                    {e.name}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
 
             <Form.Group controlId='description'>
-              <Form.Label>Description</Form.Label>
+              <Form.Label>توضیحات</Form.Label>
               <Form.Control
                 type='text'
                 placeholder='Enter description'
@@ -177,7 +235,7 @@ const ProductEditScreen = () => {
               variant='primary'
               style={{ marginTop: '1rem' }}
             >
-              Update
+              به روز رسانی
             </Button>
           </Form>
         )}

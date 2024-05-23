@@ -5,11 +5,36 @@ main {
 .rating span {
   margin: 0.1rem;
 }
-
+.container {
+  direction: rtl;
+}
 .rating svg {
   color: #f8e825;
 }
-
+.searchInput {
+  min-width: 200px;
+}
+.imageRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block: 10px;
+  cursor: pointer;
+}
+.imageItem {
+  width: 100px;
+}
+.headerLogo {
+  width: 100px;
+  margin-left: 20px;
+}
+.menuItem {
+  display: flex;
+  margin-inline: 6px;
+  justify-content: start;
+  align-items: center;
+  gap: 6px;
+}
 .rating-text {
   font-size: 0.8rem;
   font-weight: 600;

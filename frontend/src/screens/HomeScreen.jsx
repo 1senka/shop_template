@@ -23,7 +23,7 @@ const HomeScreen = () => {
         <ProductCarousel />
       ) : (
         <Link to='/' className='btn btn-light mb-4'>
-          Go Back
+          بازگشت
         </Link>
       )}
       {isLoading ? (

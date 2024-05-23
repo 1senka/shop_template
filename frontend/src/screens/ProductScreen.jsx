@@ -16,7 +16,6 @@ import {
   useGetProductDetailsQuery,
   useCreateReviewMutation,
 } from '../slices/productsApiSlice';
-import Rating from '../components/Rating';
 import Loader from '../components/Loader';
 import Message from '../components/Message';
 import Meta from '../components/Meta';
@@ -68,7 +67,7 @@ const ProductScreen = () => {
   return (
     <>
       <Link className='btn btn-light my-3' to='/'>
-        Go Back
+        بازگشت
       </Link>
       {isLoading ? (
         <Loader />
@@ -88,12 +87,7 @@ const ProductScreen = () => {
                 <ListGroup.Item>
                   <h3>{product.name}</h3>
                 </ListGroup.Item>
-                <ListGroup.Item>
-                  <Rating
-                    value={product.rating}
-                    text={`${product.numReviews} reviews`}
-                  />
-                </ListGroup.Item>
+
                 <ListGroup.Item>Price: ${product.price}</ListGroup.Item>
                 <ListGroup.Item>
                   Description: {product.description}
@@ -166,7 +160,6 @@ const ProductScreen = () => {
                 {product.reviews.map((review) => (
                   <ListGroup.Item key={review._id}>
                     <strong>{review.name}</strong>
-                    <Rating value={review.rating} />
                     <p>{review.createdAt.substring(0, 10)}</p>
                     <p>{review.comment}</p>
                   </ListGroup.Item>

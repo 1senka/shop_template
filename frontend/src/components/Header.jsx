@@ -1,16 +1,16 @@
 import { Navbar, Nav, Container, NavDropdown, Badge } from 'react-bootstrap';
-import { FaShoppingCart, FaUser } from 'react-icons/fa';
 import { LinkContainer } from 'react-router-bootstrap';
+import { MdHome } from 'react-icons/md';
+
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useLogoutMutation } from '../slices/usersApiSlice';
 import { logout } from '../slices/authSlice';
 import SearchBox from './SearchBox';
-import logo from '../assets/logo.png';
+import logo from '../assets/sswm.jpg';
 import { resetCart } from '../slices/cartSlice';
 
 const Header = () => {
-  const { cartItems } = useSelector((state) => state.cart);
   const { userInfo } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
@@ -33,60 +33,62 @@ const Header = () => {
 
   return (
     <header>
-      <Navbar bg='primary' variant='dark' expand='lg' collapseOnSelect>
+      <Navbar
+        bg='primary'
+        variant='dark'
+        expand='lg'
+        collapseOnSelect
+        className='header'
+      >
         <Container>
           <LinkContainer to='/'>
             <Navbar.Brand>
-              <img src={logo} alt='ProShop' />
-              ProShop
+              <img src={logo} alt='Iranian Shop' className='headerLogo' />
+              فروشگاه ایرانیان
             </Navbar.Brand>
           </LinkContainer>
           <Navbar.Toggle aria-controls='basic-navbar-nav' />
           <Navbar.Collapse id='basic-navbar-nav'>
-            <Nav className='ms-auto'>
+            <LinkContainer to='/'>
+              <NavDropdown.Item>
+                <div className='menuItem'>
+                  <MdHome />
+                  خانه
+                </div>
+              </NavDropdown.Item>
+            </LinkContainer>
+            <LinkContainer to='/products'>
+              <NavDropdown.Item>
+                <div className='menuItem'>
+                  <MdHome />
+                  خانه
+                </div>
+              </NavDropdown.Item>
+            </LinkContainer>
+            <Nav className='me-auto'>
               <SearchBox />
-              <LinkContainer to='/cart'>
-                <Nav.Link>
-                  <FaShoppingCart /> Cart
-                  {cartItems.length > 0 && (
-                    <Badge pill bg='success' style={{ marginLeft: '5px' }}>
-                      {cartItems.reduce((a, c) => a + c.qty, 0)}
-                    </Badge>
-                  )}
-                </Nav.Link>
-              </LinkContainer>
-              {userInfo ? (
-                <>
-                  <NavDropdown title={userInfo.name} id='username'>
-                    <LinkContainer to='/profile'>
-                      <NavDropdown.Item>Profile</NavDropdown.Item>
-                    </LinkContainer>
-                    <NavDropdown.Item onClick={logoutHandler}>
-                      Logout
-                    </NavDropdown.Item>
-                  </NavDropdown>
-                </>
-              ) : (
-                <LinkContainer to='/login'>
-                  <Nav.Link>
-                    <FaUser /> Sign In
-                  </Nav.Link>
-                </LinkContainer>
-              )}
 
               {/* Admin Links */}
               {userInfo && userInfo.isAdmin && (
-                <NavDropdown title='Admin' id='adminmenu'>
+                <NavDropdown title='Admin' id='adminmenu' className='my-auto'>
                   <LinkContainer to='/admin/productlist'>
-                    <NavDropdown.Item>Products</NavDropdown.Item>
+                    <NavDropdown.Item>محصولات</NavDropdown.Item>
                   </LinkContainer>
-                  <LinkContainer to='/admin/orderlist'>
-                    <NavDropdown.Item>Orders</NavDropdown.Item>
+
+                  <LinkContainer to='/admin/categorylist'>
+                    <NavDropdown.Item>دسته بندی ها</NavDropdown.Item>
                   </LinkContainer>
-                  <LinkContainer to='/admin/userlist'>
+                  {/* <LinkContainer to='/admin/userlist'>
                     <NavDropdown.Item>Users</NavDropdown.Item>
-                  </LinkContainer>
+                  </LinkContainer> */}
                 </NavDropdown>
+              )}
+              {userInfo && (
+                <>
+                  <NavDropdown.Item onClick={logoutHandler} className='my-auto'>
+                    خروج
+                  </NavDropdown.Item>
+                </>
               )}
             </Nav>
           </Navbar.Collapse>

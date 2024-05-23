@@ -1,8 +1,30 @@
-import { PRODUCTS_URL } from '../constants';
+import { PRODUCTS_URL, CATEGORIES_URL, IMAGES_URL } from '../constants';
 import { apiSlice } from './apiSlice';
 
 export const productsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    getCategory: builder.query({
+      query: () => ({
+        url: CATEGORIES_URL,
+      }),
+      keepUnusedDataFor: 5,
+      providesTags: ['Category'],
+    }),
+    deleteCategory: builder.mutation({
+      query: (productId) => ({
+        url: `${CATEGORIES_URL}/${productId}`,
+        method: 'DELETE',
+      }),
+      providesTags: ['Category'],
+    }),
+    deleteImage: builder.mutation({
+      query: (data) => ({
+        url: `${IMAGES_URL}`,
+        method: 'DELETE',
+        body: { path: data },
+      }),
+      providesTags: ['Image'],
+    }),
     getProducts: builder.query({
       query: ({ keyword, pageNumber }) => ({
         url: PRODUCTS_URL,
@@ -17,12 +39,34 @@ export const productsApiSlice = apiSlice.injectEndpoints({
       }),
       keepUnusedDataFor: 5,
     }),
+    getCategoryDetails: builder.query({
+      query: (categoryId) => ({
+        url: `${CATEGORIES_URL}/${categoryId}`,
+      }),
+      keepUnusedDataFor: 5,
+    }),
     createProduct: builder.mutation({
       query: () => ({
         url: `${PRODUCTS_URL}`,
         method: 'POST',
       }),
       invalidatesTags: ['Product'],
+    }),
+    createCategory: builder.mutation({
+      query: (data) => ({
+        url: `${CATEGORIES_URL}`,
+        body: data,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Category'],
+    }),
+    updateCategory: builder.mutation({
+      query: (data) => ({
+        url: `${CATEGORIES_URL}/${data.categoryId}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['Category'],
     }),
     updateProduct: builder.mutation({
       query: (data) => ({
@@ -33,6 +77,13 @@ export const productsApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Products'],
     }),
     uploadProductImage: builder.mutation({
+      query: (data) => ({
+        url: `/api/upload`,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    uploadCategoryImage: builder.mutation({
       query: (data) => ({
         url: `/api/upload`,
         method: 'POST',
@@ -63,11 +114,18 @@ export const productsApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetProductsQuery,
+  useGetCategoryQuery,
+  useDeleteCategoryMutation,
   useGetProductDetailsQuery,
+  useGetCategoryDetailsQuery,
   useCreateProductMutation,
+  useCreateCategoryMutation,
   useUpdateProductMutation,
+  useUpdateCategoryMutation,
   useUploadProductImageMutation,
+  useUploadCategoryImageMutation,
   useDeleteProductMutation,
+  useDeleteImageMutation,
   useCreateReviewMutation,
   useGetTopProductsQuery,
 } = productsApiSlice;

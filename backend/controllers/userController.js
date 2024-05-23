@@ -6,22 +6,22 @@ import User from '../models/userModel.js';
 // @route   POST /api/users/auth
 // @access  Public
 const authUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-
-  const user = await User.findOne({ email });
-
+  const { username, password } = req.body;
+  console.log('username,password :>> ', username, password);
+  const user = await User.findOne({ username });
+  console.log('user :>> ', user);
   if (user && (await user.matchPassword(password))) {
     generateToken(res, user._id);
 
     res.json({
       _id: user._id,
       name: user.name,
-      email: user.email,
+      username: user.username,
       isAdmin: user.isAdmin,
     });
   } else {
     res.status(401);
-    throw new Error('Invalid email or password');
+    throw new Error('Invalid username or password');
   }
 });
 
@@ -29,9 +29,9 @@ const authUser = asyncHandler(async (req, res) => {
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, username, password } = req.body;
 
-  const userExists = await User.findOne({ email });
+  const userExists = await User.findOne({ username });
 
   if (userExists) {
     res.status(400);
@@ -162,7 +162,7 @@ const updateUser = asyncHandler(async (req, res) => {
 
   if (user) {
     user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
+    user.username = req.body.username || user.username;
     user.isAdmin = Boolean(req.body.isAdmin);
 
     const updatedUser = await user.save();
@@ -170,7 +170,7 @@ const updateUser = asyncHandler(async (req, res) => {
     res.json({
       _id: updatedUser._id,
       name: updatedUser.name,
-      email: updatedUser.email,
+      username: updatedUser.username,
       isAdmin: updatedUser.isAdmin,
     });
   } else {
