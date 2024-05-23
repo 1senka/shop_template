@@ -8,6 +8,8 @@ import { logout } from './slices/authSlice';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import 'swiper/css';
+import 'swiper/css/pagination';
 
 const App = () => {
   const dispatch = useDispatch();

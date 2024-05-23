@@ -14,6 +14,11 @@ main {
 .searchInput {
   min-width: 200px;
 }
+.carouselImage {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
 .imageRow {
   display: flex;
   align-items: center;
@@ -42,6 +47,7 @@ main {
 }
 
 .product-title {
+  text-decoration: none;
   height: 2.5em; /* Set a fixed height */
   overflow: hidden; /* Hide overflow content */
   text-overflow: ellipsis; /* Add ellipsis for long text */

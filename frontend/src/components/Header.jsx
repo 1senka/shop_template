@@ -57,14 +57,7 @@ const Header = () => {
                 </div>
               </NavDropdown.Item>
             </LinkContainer>
-            <LinkContainer to='/products'>
-              <NavDropdown.Item>
-                <div className='menuItem'>
-                  <MdHome />
-                  خانه
-                </div>
-              </NavDropdown.Item>
-            </LinkContainer>
+
             <Nav className='me-auto'>
               <SearchBox />
 

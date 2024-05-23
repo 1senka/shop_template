@@ -34,8 +34,10 @@ const getProductById = asyncHandler(async (req, res) => {
   // middleware. See README for more info.
 
   const product = await Product.findById(req.params.id);
+  const category = await Category.findById(product.category);
+  console.log('category :>> ', category);
   if (product) {
-    return res.json(product);
+    return res.json({ ...product._doc, categoryName: category.name });
   } else {
     // NOTE: this will run if a valid ObjectId but no product was found
     // i.e. product may be null
